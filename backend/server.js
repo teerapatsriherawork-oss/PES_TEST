@@ -41,3 +41,13 @@ app.get('/users', (req, res) => {
 app.listen(3000, () => {
   console.log('Backend server running on port 3000');
 });
+
+// นำเข้าไฟล์เส้นทาง (Routes)
+const apiRoutes = require('./routes/apiRoutes');
+
+// 1. อนุญาตให้อ่านข้อมูลแบบ JSON (สำคัญมากสำหรับ API)
+app.use(express.json());
+
+// 2. เรียกใช้ API
+// เข้าทาง http://localhost:3000/api/register
+app.use('/api', apiRoutes);
