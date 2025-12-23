@@ -1,13 +1,25 @@
-version:  '3.8'
+version: '3.8'
 services:
-    db:
-      image: mysql:latest
-      environment:
-        MYSQL_ROOT_PASSWORD: 1234
-        MYSQL_DATABASE: personnel_eval_db
-      ports:
+  # Service เดิม (Database)
+  db:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: personnel_eval_db
+    ports:
+      # ฝั่งซ้าย (3307) คือพอร์ตที่เครื่องเราใช้ (Localhost)
+      # ฝั่งขวา (3306) คือพอร์ตจริงของ MySQL ในกล่อง
       - "3307:3306"
-      volumes:
-      # ฝั่งซ้าย ./init_db คือโฟลเดอร์ที่เครื่องเรา
-      # ฝั่งขวา /docker-entrypoint-initdb.d คือจุดที่ Docker จะรออ่านไฟล์ (ห้ามเปลี่ยน)
-      - ./init_db:/docker-entrypoint-initdb.d
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  # Service ใหม่ (Backend API) - เพิ่มตรงนี้!
+  backend:
+    build: ./backend        # ให้สร้างจาก Dockerfile ในโฟลเดอร์ backend
+    ports:
+      - "3000:3000"         # เปิดให้เข้าเว็บผ่าน http://localhost:3000 ได้
+    depends_on:
+      - db                  # บอกให้รอ db รันเสร็จก่อน (ในทางเทคนิค)
+    volumes:
+      - ./backend:/app      # สำคัญ! ทำ Hot Reload (แก้โค้ดแล้วไม่ต้อง Build ใหม่)
+      - /app/node_modules   # กันไม่ให้ node_modules ในเครื่องเราไปทับในกล่อง
